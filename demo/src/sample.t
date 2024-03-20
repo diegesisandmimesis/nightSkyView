@@ -19,31 +19,25 @@
 #include <adv3.h>
 #include <en_us.h>
 
+#include "date.h"
 #include "nightSkyView.h"
 
-versionInfo: GameID
-        name = 'nightSkyView Library Demo Game'
-        byline = 'Diegesis & Mimesis'
-        desc = 'Demo game for the nightSkyView library. '
-        version = '1.0'
-        IFID = '12345'
-	showAbout() {
-		"This is a simple test game that demonstrates the features
-		of the nightSkyView library.
-		<.p>
-		Consult the README.txt document distributed with the library
-		source for a quick summary of how to use the library in your
-		own games.
-		<.p>
-		The library source is also extensively commented in a way
-		intended to make it as readable as possible. ";
-	}
+versionInfo: GameID;
+gameMain: GameMainDef initialPlayerChar = me;
+
+startRoom: Room 'Room Indoors'
+	"This is a room indoors. "
+	north = outsideRoom
 ;
-gameMain: GameMainDef
-	initialPlayerChar = me
-	inlineCommand(cmd) { "<b>&gt;<<toString(cmd).toUpper()>></b>"; }
-	printCommand(cmd) { "<.p>\n\t<<inlineCommand(cmd)>><.p> "; }
++me: Person;
+
+outsideRoom: OutdoorRoom 'Room Outdoors'
+	"This is an outdoor room. "
+	south = startRoom
 ;
 
-startRoom: Room 'Void' "This is a featureless void.";
-+me: Person;
+modify gameEnvironment
+	currentDate = new Date(1979, 6, 22, 23, 0, 0, 0, 'EST-5EDT')
+	latitude = 42
+	longitude = -71
+;
