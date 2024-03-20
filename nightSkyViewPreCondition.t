@@ -8,11 +8,8 @@
 
 #include "nightSkyView.h"
 
-nightSkyViewingConditions: PreCondition
+nightSkySeeing: PreCondition
 	verifyPreCondition(obj) {
-		if(!gActor.getOutermostRoom.ofKind(OutdoorRoom)) {
-			illogical(&nightSkyCantSeeNotOutside);
-		}
 	}
 ;
 
@@ -47,7 +44,7 @@ nightSkyObjVisible: PreCondition
 		n = new Vector(l.length);
 		l.forEach(function(o) {
 			if(_checkVisibility(o) != true) {
-				nightSkyViewReportManager.markVisible(o, nil);
+				//nightSkyViewReportManager.markVisible(o, nil);
 				n.append(o);
 			}
 		});

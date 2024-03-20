@@ -26,7 +26,7 @@ modify playerActionMessages
 	}
 	nightSkyHiddenSummary(lst) {
 		return('{You/he} can\'t see
-			<<fooLister.makeSimpleList(lst)>>. ');
+			<<stringLister.makeSimpleList(lst)>>. ');
 	}
 
 	nightSkyCantSeenObjs(lst) {

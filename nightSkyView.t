@@ -22,7 +22,7 @@ nightSkyViewModuleID: ModuleID {
 // (weather and so on).
 modify defaultSky
 	dobjFor(Examine) {
-		preCond = static [ nightSkyViewingConditions ]
+		preCond = static [ nightSkySeeing ]
 		verify() { dangerous; }
 	}
 ;

@@ -7,39 +7,83 @@
 
 #include "nightSkyView.h"
 
-nightSkyViewObjects: MultiLoc, Fixture, Vaporous, Distant, PreinitObject
-	'' 'constellation'
+nightSkyViewObjects: MultiLoc, Distant, PreinitObject
+	'sky' 'sky'
+
 	initialLocationClass = Room
-
-	// List of all objects (that match our vocabulary) mentioned
-	// in this turn's action.
-	_nightSkyMatchList = perInstance(new Vector())
-	_nightSkyMatchTurn = nil
-
-	_nightSkyVisibleList = perInstance(new Vector())
 
 	execBeforeMe = static [ gameSky ]
 
 	hideFromAll(action) { return(true); }
 
+	// List of all objects (that match our vocabulary) mentioned
+	// in this turn's action.
+	nightSkyMatchList = perInstance(new Vector())
+	nightSkyMatchTurn = nil
+
+	indoorsFlag = nil
+	nightSkyVisible = perInstance(new Vector())
+	nightSkyHidden = perInstance(new Vector())
+
+	_visibilityCache = perInstance(new Vector())
+	_visibilityCacheTurn = nil
+
+	checkNightSkyVisibility(objID) {
+		local i, r;
+
+		if(_visibilityCacheTurn != libGlobal.totalTurns)
+			_visibilityCache.setLength(0);
+
+		if(_visibilityCache.length > 0) {
+			for(i = 1; i <= _visibilityCache.length; i++) {
+				// Cache hit.
+				if(_visibilityCache[i][1] == objID)
+					return(_visibilityCache[i][2]);
+			}
+		}
+
+		// Cache miss.
+
+		r = gSky.checkCatalogObject(objID);
+
+		// Add new cache entry.
+		_visibilityCache.append([ id, r ]);
+		_visibilityCacheTurn = libGlobal.totalTurns;
+
+		return(r);
+	}
+
+	markIndoors() {
+		indoorsFlag = true;
+		gAction.callAfterActionMain(self);
+	}
+
+	markVisibility(objID, v) {
+		if(v == true) {
+			if(nightSkyVisible.indexOf(objID) == nil)
+				nightSkyVisible.append(objID);
+		} else {
+			if(nightSkyHidden.indexOf(objID) == nil)
+				nightSkyHidden.append(objID);
+		}
+		gAction.callAfterActionMain(self);
+	}
+
 	dobjFor(Examine) {
-		preCond = static [
-			nightSkyViewingConditions,
-			nightSkyObjVisible
-		]
 		verify() { dangerous; }
 		action() {
-			local obj;
-
-			if(_nightSkyMatchList.length < 1)
+			if(!gActor.getOutermostRoom().ofKind(OutdoorRoom)) {
+				markIndoors();
 				return;
+			}
 
-			obj = _nightSkyMatchList[1];
+			if(nightSkyMatchList.length < 1)
+				return;
+			
+			markVisibility(nightSkyMatchList[1],
+				checkNightSkyVisibility(nightSkyMatchList[1]));
 
-			nightSkyViewReportManager.markVisible(obj, true);
-			defaultReport('{You/he} see{s} <<obj>>. ');
-			_nightSkyMatchList.splice(1, 1);
-			gAction.callAfterActionMain(nightSkyViewReportManager);
+			nightSkyMatchList.splice(1, 1);
 		}
 	}
 
@@ -75,35 +119,60 @@ nightSkyViewObjects: MultiLoc, Fixture, Vaporous, Distant, PreinitObject
 	}
 
 	matchNameCommon(origTokens, adjustedTokens) {
-		if(_nightSkyMatchTurn != libGlobal.totalTurns) {
-			_clearLists();
+		if(nightSkyMatchTurn != libGlobal.totalTurns) {
+			clearNightSky();
 		}
 
 		adjustedTokens.forEach(function(o) {
 			if((dataTypeXlat(o) == TypeSString)
-				&& (_nightSkyMatchList.indexOf(o) == nil)) {
-				_nightSkyMatchList.append(o);
+				&& (nightSkyMatchList.indexOf(o) == nil)) {
+				nightSkyMatchList.append(o);
 			}
 		});
 
-		return(self);
+		return(inherited(origTokens, adjustedTokens));
 	}
 
-	_clearLists() {
-		_nightSkyMatchList.setLength(0);
-		//_nightSkyVisibleList.setLength(0);
-		nightSkyViewReportManager.clear();
-
-		_nightSkyMatchTurn = libGlobal.totalTurns;
+	clearNightSky() {
+		nightSkyVisible.setLength(0);
+		nightSkyHidden.setLength(0);
+		nightSkyMatchList.setLength(0);
+		nightSkyMatchTurn = libGlobal.totalTurns;
+		indoorsFlag = nil;
 	}
 
-	getMatchingObjects() { return(_nightSkyMatchList); }
+	getMatchingObjects() { return(nightSkyMatchList); }
 
-/*
-	getVisibleObjects() { return(_nightSkyVisibleList); }
+	afterActionMain() {
+		gTranscript.summarizeAction(
+			function(x) { return(x.action_ == gAction); },
+			function(vec) { return(''); }
+		);
 
-	markVisible(obj, v?) {
-		_nightSkyVisibleList.append([ obj, (v ? true : nil) ]);
+		nightSkyReport();
+
+		clearNightSky();
 	}
-	*/
+
+	nightSkyReport() {
+		local txt;
+
+		if(indoorsFlag == true) {
+			reportFailure(&nightSkyCantSeeNotOutside);
+			return;
+		}
+
+		txt = new StringBuffer();
+		if(nightSkyVisible.length > 0) {
+			txt.append('You can see ');
+			txt.append(stringLister.makeSimpleList(nightSkyVisible));
+			txt.append('. ');
+		}
+		if(nightSkyHidden.length > 0) {
+			txt.append('You can\'t see ');
+			txt.append(stringLister.makeSimpleList(nightSkyHidden));
+			txt.append('. ');
+		}
+		defaultReport(toString(txt));
+	}
 ;

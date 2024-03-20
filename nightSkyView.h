@@ -11,5 +11,7 @@
 #error "nightSky should be in /home/user/tads/nightSky ."
 #endif // NIGHT_SKY_H
 
+#define gNightSkyReport (nightSkyViewReportManager)
+
 
 #define NIGHT_SKY_VIEW_H

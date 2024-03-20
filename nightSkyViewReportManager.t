@@ -11,10 +11,16 @@
 #include "nightSky.h"
 
 nightSkyViewReportManager: object
-	minLength = 2
+	minLength = 0
 
+	_indoorsFlag = nil
 	_visibleObjects = perInstance(new Vector())
 	_hiddenObjects = perInstance(new Vector())
+
+	markIndoors() {
+		_indoorsFlag = true;
+		gAction.callAfterActionMain(self);
+	}
 
 	markVisible(obj, v?) {
 		if(v == true) {
@@ -24,39 +30,34 @@ nightSkyViewReportManager: object
 			if(_hiddenObjects.indexOf(obj) == nil)
 				_hiddenObjects.append(obj);
 		}
+		gAction.callAfterActionMain(self);
 	}
 
 	clear() {
 		_visibleObjects.setLength(0);
 		_hiddenObjects.setLength(0);
+		_indoorsFlag = nil;
 	}
 
 	afterActionMain() {
 		if(gAction.dobjList_.length() < minLength) {
 			return;
 		}
+
+		// We shouldn't have any reports to summarize, but we squish
+		// 'em if we have 'em.
 		gTranscript.summarizeAction(
-			function(x) {
-				return(x.action_ == gAction);
-			},
-			function(vec) {
-				return('<<summarizeVisible(_visibleObjects)>>
-					<<summarizeHidden(_hiddenObjects)>>');
-			}
+			function(x) { return(x.action_ == gAction); },
+			function(vec) { return(''); }
 		);
+
+		skyReport();
+
 		clear();
 	}
 
-	summarizeVisible(lst) {
-		if((lst == nil) || (lst.length < 1))
-			return('');
-		return(playerActionMessages.nightSkyVisibleSummary(lst));
-	}
-
-	summarizeHidden(lst) {
-		if((lst == nil) || (lst.length < 1))
-			return('');
-		return(playerActionMessages.nightSkyHiddenSummary(lst));
+	skyReport() {
+		if(_indoorsFlag == true)
 	}
 ;
 
