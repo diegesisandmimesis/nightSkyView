@@ -11,32 +11,58 @@
 #include "nightSky.h"
 
 nightSkyViewReportManager: object
+	minLength = 2
+
 	_visibleObjects = perInstance(new Vector())
+	_hiddenObjects = perInstance(new Vector())
 
 	markVisible(obj, v?) {
-		_visibleObjects.append([ obj, (v ? true : nil) ]);
+		if(v == true) {
+			if(_visibleObjects.indexOf(obj) == nil)
+				_visibleObjects.append(obj);
+		} else {
+			if(_hiddenObjects.indexOf(obj) == nil)
+				_hiddenObjects.append(obj);
+		}
 	}
-	getVisibleObjects() { return(_visibleObjects); }
+
+	clear() {
+		_visibleObjects.setLength(0);
+		_hiddenObjects.setLength(0);
+	}
 
 	afterActionMain() {
+		if(gAction.dobjList_.length() < minLength) {
+			return;
+		}
 		gTranscript.summarizeAction(
 			function(x) {
 				return(x.action_ == gAction);
 			},
 			function(vec) {
-				local l, hidden, visible;
-				l = getVisibleObjects();
-				hidden = new Vector(l.length);
-				visible = new Vector(l.length);
-				l.forEach(function(o) {
-					if(o[2] == true)
-						visible.append(o[1]);
-					else
-						hidden.append(o[1]);
-				});
-				return('foo');
+				return('<<summarizeVisible(_visibleObjects)>>
+					<<summarizeHidden(_hiddenObjects)>>');
 			}
 		);
-		_visibleObjects.setLength(0);
+		clear();
+	}
+
+	summarizeVisible(lst) {
+		if((lst == nil) || (lst.length < 1))
+			return('');
+		return(playerActionMessages.nightSkyVisibleSummary(lst));
+	}
+
+	summarizeHidden(lst) {
+		if((lst == nil) || (lst.length < 1))
+			return('');
+		return(playerActionMessages.nightSkyHiddenSummary(lst));
+	}
+;
+
+fooLister: SimpleLister
+	showListItem(str, options, pov, infoTab) { say(str); }
+	getArrangedListCardinality(singles, groups, groupTab) {
+		return(singles.length());
 	}
 ;

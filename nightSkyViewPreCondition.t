@@ -35,7 +35,7 @@ nightSkyObjVisible: PreCondition
 	_visibleCheckTurn = nil
 
 	verifyPreCondition(obj) {
-		local l, n, v;
+		local l, n;
 
 		if(obj != nightSkyViewObjects)
 			return;
@@ -46,14 +46,15 @@ nightSkyObjVisible: PreCondition
 
 		n = new Vector(l.length);
 		l.forEach(function(o) {
-			v = _checkVisibility(o);
-			nightSkyViewReportManager.markVisible(o, v);
-			if(v != true)
+			if(_checkVisibility(o) != true) {
+				nightSkyViewReportManager.markVisible(o, nil);
 				n.append(o);
+			}
 		});
 
-		if(n.length == l.length)
+		if(n.length == l.length) {
 			illogical(&nightSkyCantSeenObjs, n);
+		}
 	}
 
 	// Check to see if the named object is currently visible.
