@@ -18,6 +18,10 @@ modify playerActionMessages
 		return('{You/he} can\'t see the sky from here. ');
 	}
 
+	nightSkyCantSeeDaytime(o?) {
+		return('{You/he} can\'t see celestial objects during the day. ');
+	}
+
 	nightSkyCantExamineMulti = '{You/he} can only examine one thing at a time. '
 
 	nightSkyVisibleSummary(lst) {

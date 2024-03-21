@@ -41,3 +41,4 @@ modify gameEnvironment
 	latitude = 42
 	longitude = -71
 ;
++EphemView 'lyra' 'Lyra is a perfect little triangle. ';

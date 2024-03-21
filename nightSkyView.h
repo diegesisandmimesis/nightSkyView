@@ -12,6 +12,8 @@
 #endif // NIGHT_SKY_H
 
 #define gNightSkyReport (nightSkyViewReportManager)
+#define gNightSkySeeing (gSky.getSeeing())
 
+EphemView template 'name' 'view';
 
 #define NIGHT_SKY_VIEW_H
