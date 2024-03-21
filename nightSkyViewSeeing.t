@@ -25,12 +25,12 @@ nightSkySeeing: PreCondition
 
 modify NightSky
 	seeing = nil
-	seeingTimestamp = nil
+	seeingTurn = nil
 
 	getSeeing(ignoreActor?) {
 		local ts;
 
-		ts = calendar.getTimestamp();
+		ts = libGlobal.totalTurns;
 		if((ts == seeingTimestamp) && (seeing != nil))
 			return(seeing);
 
