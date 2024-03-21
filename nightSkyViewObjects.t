@@ -229,6 +229,11 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 			return;
 		}
 
+		if(nss == nightSkySeeingDay) {
+			reportFailure(&nightSkyCantSeeDaytime);
+			return;
+		}
+
 		txt = new StringBuffer();
 
 		// Describe each visible object.

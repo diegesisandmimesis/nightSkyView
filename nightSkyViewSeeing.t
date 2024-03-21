@@ -42,7 +42,7 @@ modify NightSky
 			return(seeing);
 		}
 
-		if(abs(gSky.getSunMeridianPosition()) < 12) {
+		if(abs(gSky.getSunMeridianPosition()) < 90) {
 			seeing = nightSkySeeingDay;
 			return(seeing);
 		}
