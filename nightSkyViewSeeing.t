@@ -31,10 +31,10 @@ modify NightSky
 		local ts;
 
 		ts = libGlobal.totalTurns;
-		if((ts == seeingTimestamp) && (seeing != nil))
+		if((ts == seeingTurn) && (seeing != nil))
 			return(seeing);
 
-		seeingTimestamp = ts;
+		seeingTurn = ts;
 
 		if((ignoreActor != true)
 			&& !gActor.getOutermostRoom().ofKind(OutdoorRoom)) {
