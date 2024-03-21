@@ -7,7 +7,7 @@
 
 #include "nightSkyView.h"
 
-nightSkyViewObjects: MultiLoc, Distant, PreinitObject
+nightSkyView: MultiLoc, Distant, PreinitObject
 	'sky' 'sky'
 
 	initialLocationClass = Room
@@ -38,6 +38,8 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 	// List of objects not currently visible (which were mentioned in
 	// the current command).
 	nightSkyHidden = perInstance(new Vector())
+
+	nightSkyDayList = perInstance(new Vector())
 
 	// Visibility cache properties
 	//
@@ -103,7 +105,7 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 	}
 
 	// Set the flag indicating the gActor is indoors.
-	markSeeing() {
+	markIndoors() {
 		// Set the flag.
 		seeingState = gNightSkySeeing;
 
@@ -136,8 +138,8 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 		action() {
 			// If the action isn't somehwere the sky is visible,
 			// we're done.
-			if(!checkNightSkySeeing()) {
-				markSeeing();
+			if(gNightSkySeeing == nightSkySeeingIndoors) {
+				markIndoors();
 				return;
 			}
 
@@ -203,6 +205,7 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 		nightSkyMatchList.setLength(0);
 		nightSkyMatchTurn = libGlobal.totalTurns;
 		seeingState = nil;
+		nightSkyDayList.setLength(0);
 	}
 
 	getMatchingObjects() { return(nightSkyMatchList); }
@@ -230,7 +233,7 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 		}
 
 		if(nss == nightSkySeeingDay) {
-			reportFailure(&nightSkyCantSeeDaytime);
+			nightSkyDayReport();
 			return;
 		}
 
@@ -239,7 +242,15 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 		// Describe each visible object.
 		if(nightSkyVisible.length > 0) {
 			nightSkyVisible.forEach(function(o) {
-				txt.append(describeObject(o));
+				if(nss == nightSkySeeingDay) {
+					if((o.name = 'Sun') ||
+						(o.name = 'Moon'))
+						txt.append(describeObject(o));
+					else
+						nightSkyDayList.append(o);
+				} else {
+					txt.append(describeObject(o));
+				}
 			});
 		}
 
@@ -254,6 +265,61 @@ nightSkyViewObjects: MultiLoc, Distant, PreinitObject
 			txt.append('You can\'t see ');
 			txt.append(stringLister.makeSimpleList(l));
 			txt.append('. ');
+		}
+
+		defaultReport(toString(txt));
+	}
+
+	_visibleDuringDay(obj) {
+		if((obj.name == 'Sun') || (obj.name == 'Moon'))
+			return(true);
+		return(nil);
+	}
+
+	nightSkyDayReport() {
+		local l0, l1, txt;
+
+		if(gNightSkySeeing != nightSkySeeingDay)
+			return;
+
+		txt = new StringBuffer();
+
+		l0 = new Vector(nightSkyVisible.length + nightSkyHidden.length);
+		l1 = new Vector(nightSkyVisible.length + nightSkyHidden.length);
+		if(nightSkyVisible.length > 0) {
+			nightSkyVisible.forEach(function(o) {
+				o = gSky.getCatalogObjectByID(o);
+				if(_visibleDuringDay(o)) {
+					txt.append(describeObject(o));
+				} else {
+					l0.append(o.name);
+				}
+			});
+		}
+
+		// Describe the hidden objects.
+		if(nightSkyHidden.length > 0) {
+			nightSkyHidden.forEach(function(o) {
+				o = gSky.getCatalogObjectByID(o);
+				if(_visibleDuringDay(o))
+					l1.append(o.name);
+				else
+					l0.append(o.name);
+			});
+		}
+
+		if(l1.length > 0) {
+			txt.append('You can\'t see ');
+			txt.append(stringLister.makeSimpleList(l1));
+			txt.append('. ');
+		}
+		if(l0.length > 0) {
+			txt.append(stringLister.makeSimpleList(l0));
+			if(l0.length == 1)
+				txt.append(' isn\'t ');
+			else
+				txt.append(' aren\'t ');
+			txt.append('visible during the day. ');
 		}
 
 		defaultReport(toString(txt));

@@ -37,7 +37,7 @@ outsideRoom: OutdoorRoom 'Room Outdoors'
 ;
 
 modify gameEnvironment
-	currentDate = new Date(1979, 6, 22, 23, 0, 0, 0, 'EST-5EDT')
+	currentDate = new Date(1979, 6, 23, 10, 0, 0, 0, 'EST-5EDT')
 	latitude = 42
 	longitude = -71
 ;
